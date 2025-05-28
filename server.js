@@ -14,7 +14,6 @@ const corsOptions = {
   origin: 'https://gogian.github.io'
 };
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
 app.post('/consultar-id', async (req, res) => {
@@ -25,21 +24,26 @@ app.post('/consultar-id', async (req, res) => {
   }
 
   try {
+    const filtro = {
+      filters: {
+        [EMAIL_FIELD_ID]: { from: correo.toLowerCase().trim() }
+      },
+      limit: 1
+    };
+
+    console.log('Filtro enviado a Podio:', filtro);
+
     const podioResponse = await fetch(`https://api.podio.com/item/app/${APP_ID}/filter`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `OAuth2 ${APP_TOKEN}`
       },
-      body: JSON.stringify({
-        filters: {
-          [EMAIL_FIELD_ID]: correo.toLowerCase().trim()
-        },
-        limit: 1
-      })
+      body: JSON.stringify(filtro)
     });
 
     const data = await podioResponse.json();
+    console.log('Respuesta de Podio:', data);
 
     if (data.items && data.items.length > 0) {
       const idInterno = data.items[0].item_id;
