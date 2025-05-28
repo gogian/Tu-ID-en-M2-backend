@@ -13,6 +13,7 @@ const EMAIL_FIELD_ID = process.env.PODIO_EMAIL_FIELD_ID;
 const corsOptions = {
   origin: 'https://gogian.github.io'
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -34,22 +35,36 @@ app.post('/consultar-id', async (req, res) => {
     console.log('Filtro enviado a Podio:', filtro);
 
     const podioResponse = await axios.post(
-  `https://api.podio.com/item/app/${APP_ID}/filter`,
-  filtro,
-  {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `OAuth2 ${APP_TOKEN}`
-    }
-  }
-);
+      `https://api.podio.com/item/app/${APP_ID}/filter`,
+      filtro,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `OAuth2 ${APP_TOKEN}`
+        }
+      }
+    );
 
-const data = podioResponse.data;
+    const data = podioResponse.data;
     console.log('Respuesta de Podio:', data);
 
     if (data.items && data.items.length > 0) {
-      const idInterno = data.items[0].item_id;
-      return res.json({ id: idInterno });
+      const fields = data.items[0].fields;
+      const campoTituloBDP = fields.find(f => f.external_id === 'titulo-bdp');
+
+      if (campoTituloBDP && campoTituloBDP.values.length > 0) {
+        const valorCompleto = campoTituloBDP.values[0].value;
+        const match = valorCompleto.match(/^SV(\d+)/);
+
+        if (match) {
+          const soloNumero = match[1];
+          return res.json({ id: soloNumero });
+        } else {
+          return res.status(500).json({ error: 'No se pudo extraer el ID interno del texto.' });
+        }
+      } else {
+        return res.status(404).json({ error: 'No se encontró el campo de ID interna.' });
+      }
     } else {
       return res.status(404).json({ error: 'No se encontró un broker con ese correo.' });
     }
