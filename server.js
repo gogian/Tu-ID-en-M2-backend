@@ -10,7 +10,11 @@ const APP_ID = process.env.PODIO_APP_ID;
 const APP_TOKEN = process.env.PODIO_APP_TOKEN;
 const EMAIL_FIELD_ID = process.env.PODIO_EMAIL_FIELD_ID;
 
-app.use(cors());
+const corsOptions = {
+  origin: 'https://gogian.github.io'
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.post('/consultar-id', async (req, res) => {
