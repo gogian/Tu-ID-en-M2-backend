@@ -25,23 +25,33 @@ app.post('/consultar-id', async (req, res) => {
   }
 
   try {
+    // Paso 1: Obtener access_token con app_id y app_token
+    const authResponse = await axios.post('https://podio.com/oauth/token', {
+      grant_type: 'app',
+      app_id: APP_ID,
+      app_token: APP_TOKEN
+    });
+
+    const accessToken = authResponse.data.access_token;
+
+    // Paso 2: Armar filtro
     const filtro = {
       filters: {
         [EMAIL_FIELD_ID]: { from: correo.toLowerCase().trim() }
       },
-      limit: 1,
-      app_id: APP_ID,
-      app_token: APP_TOKEN
+      limit: 1
     };
 
     console.log('Filtro enviado a Podio:', filtro);
 
+    // Paso 3: Consultar Podio con access_token
     const podioResponse = await axios.post(
       `https://api.podio.com/item/app/${APP_ID}/filter`,
       filtro,
       {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `OAuth2 ${accessToken}`
         }
       }
     );
@@ -70,7 +80,7 @@ app.post('/consultar-id', async (req, res) => {
       return res.status(404).json({ error: 'No se encontró un broker con ese correo.' });
     }
   } catch (err) {
-    console.error(err.response?.data || err);
+    console.error(err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
