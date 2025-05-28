@@ -29,7 +29,9 @@ app.post('/consultar-id', async (req, res) => {
       filters: {
         [EMAIL_FIELD_ID]: { from: correo.toLowerCase().trim() }
       },
-      limit: 1
+      limit: 1,
+      app_id: APP_ID,
+      app_token: APP_TOKEN
     };
 
     console.log('Filtro enviado a Podio:', filtro);
@@ -39,8 +41,7 @@ app.post('/consultar-id', async (req, res) => {
       filtro,
       {
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `OAuth2 ${APP_TOKEN}`
+          'Content-Type': 'application/json'
         }
       }
     );
@@ -69,7 +70,7 @@ app.post('/consultar-id', async (req, res) => {
       return res.status(404).json({ error: 'No se encontró un broker con ese correo.' });
     }
   } catch (err) {
-    console.error(err);
+    console.error(err.response?.data || err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
