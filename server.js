@@ -5,9 +5,10 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Variables desde entorno
+// Entorno
+const CLIENT_ID = process.env.PODIO_CLIENT_ID;
+const CLIENT_SECRET = process.env.PODIO_CLIENT_SECRET;
 const APP_ID = process.env.PODIO_APP_ID;
-const APP_TOKEN = process.env.PODIO_APP_TOKEN;
 const EMAIL_FIELD_ID = process.env.PODIO_EMAIL_FIELD_ID;
 
 const corsOptions = {
@@ -17,6 +18,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Ruta
 app.post('/consultar-id', async (req, res) => {
   const { correo } = req.body;
 
@@ -25,16 +27,16 @@ app.post('/consultar-id', async (req, res) => {
   }
 
   try {
-    // Paso 1: Obtener access_token con app_id y app_token
+    // 1. Obtener token de acceso
     const authResponse = await axios.post('https://api.podio.com/oauth/token', {
-      grant_type: 'app',
-      app_id: APP_ID,
-      app_token: APP_TOKEN
+      grant_type: 'client_credentials',
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET
     });
 
     const accessToken = authResponse.data.access_token;
 
-    // Paso 2: Armar filtro
+    // 2. Consultar filtro
     const filtro = {
       filters: {
         [EMAIL_FIELD_ID]: { from: correo.toLowerCase().trim() }
@@ -44,7 +46,6 @@ app.post('/consultar-id', async (req, res) => {
 
     console.log('Filtro enviado a Podio:', filtro);
 
-    // Paso 3: Consultar Podio con access_token
     const podioResponse = await axios.post(
       `https://api.podio.com/item/app/${APP_ID}/filter`,
       filtro,
