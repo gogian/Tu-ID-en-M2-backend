@@ -26,7 +26,7 @@ app.post('/consultar-id', async (req, res) => {
 
   try {
     // Paso 1: Obtener access_token con app_id y app_token
-    const authResponse = await axios.post('https://podio.com/oauth/token', {
+    const authResponse = await axios.post('https://api.podio.com/oauth/token', {
       grant_type: 'app',
       app_id: APP_ID,
       app_token: APP_TOKEN
