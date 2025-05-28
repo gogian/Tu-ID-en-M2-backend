@@ -1,6 +1,6 @@
 // server.js
 const express = require('express');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,16 +33,18 @@ app.post('/consultar-id', async (req, res) => {
 
     console.log('Filtro enviado a Podio:', filtro);
 
-    const podioResponse = await fetch(`https://api.podio.com/item/app/${APP_ID}/filter`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `OAuth2 ${APP_TOKEN}`
-      },
-      body: JSON.stringify(filtro)
-    });
+    const podioResponse = await axios.post(
+  `https://api.podio.com/item/app/${APP_ID}/filter`,
+  filtro,
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `OAuth2 ${APP_TOKEN}`
+    }
+  }
+);
 
-    const data = await podioResponse.json();
+const data = podioResponse.data;
     console.log('Respuesta de Podio:', data);
 
     if (data.items && data.items.length > 0) {
